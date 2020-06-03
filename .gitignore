@@ -1,5 +1,6 @@
 .idea
 composer.lock
 *.log
+vendor
 runtime
 .git
