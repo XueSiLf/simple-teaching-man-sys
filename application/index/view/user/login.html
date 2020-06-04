@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="renderer" content="webkit|ie-comp|ie-stand">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="lib/html5.js"></script>
+    <script type="text/javascript" src="lib/respond.min.js"></script>
+    <![endif]-->
+    <link href="__STATIC__/h-ui/css/H-ui.min.css" rel="stylesheet" type="text/css" />
+    <link href="__STATIC__/h-ui.admin/css/H-ui.login.css" rel="stylesheet" type="text/css" />
+    <link href="__STATIC__/h-ui.admin/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="__LIB__//Hui-iconfont/1.0.8/iconfont.css" rel="stylesheet" type="text/css" />
+    <!--[if IE 6]>
+    <script type="text/javascript" src="__STATIC__/h-ui.admin/js/DD_belatedPNG_0.0.8a-min.js" ></script>
+    <script>DD_belatedPNG.fix('*');</script><![endif]-->
+    <title>后台登录 - 简易教学管理系统</title>
+    <meta name="keywords" content="简易教学管理系统">
+    <meta name="description" content="简易教学管理系统">
+</head>
+<body>
+<input type="hidden" id="TenantId" name="TenantId" value="" />
+<div class="header"></div>
+<div class="loginWraper">
+    <div id="loginform" class="loginBox">
+        <form class="form form-horizontal" action="" method="post">
+            <div class="row cl">
+                <label class="form-label col-xs-3"><i class="Hui-iconfont">&#xe60d;</i></label>
+                <div class="formControls col-xs-8">
+                    <input name="name" type="text" placeholder="用户名" class="input-text size-L">
+                </div>
+            </div>
+            <div class="row cl">
+                <label class="form-label col-xs-3"><i class="Hui-iconfont">&#xe60e;</i></label>
+                <div class="formControls col-xs-8">
+                    <input name="password" type="password" placeholder="密码" class="input-text size-L">
+                </div>
+            </div>
+            <div class="row cl">
+                <div class="formControls col-xs-8 col-xs-offset-3">
+                    <input name="verify" class="input-text size-L" type="text" placeholder="验证码" onblur="if(this.value==''){this.value='验证码:'}" onclick="if(this.value=='验证码:'){this.value='';}" style="width:150px;">
+                    <img id="verifyImg" src="{:captcha_src()}">
+                    <a id="kanbuq" href="javascript:refreshVerify();">看不清，换一张</a>
+                </div>
+            </div>
+            <div class="row cl">
+                <div class="formControls col-xs-8 col-xs-offset-3">
+                    <label for="online">
+                        <input type="checkbox" name="online" id="online" value="">
+                        使我保持登录状态</label>
+                </div>
+            </div>
+            <div class="row cl">
+                <div class="formControls col-xs-8 col-xs-offset-3">
+                    <input id="login" type="button" class="btn btn-success radius size-L" value="&nbsp;登&nbsp;&nbsp;&nbsp;&nbsp;录&nbsp;">
+                    <input name="" type="reset" class="btn btn-default radius size-L" value="&nbsp;取&nbsp;&nbsp;&nbsp;&nbsp;消&nbsp;">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="footer">Copyright 简易教学管理系统 v1.0</div>
+
+<script type="text/javascript" src="__LIB__/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="__STATIC__/h-ui/js/H-ui.js"></script>
+
+<!-- ajax提交脚本 -->
+<script>
+    $(function () {
+        // 给登录按钮添加点击事件
+        $("#login").on("click", function () {
+            $.ajax({
+                type: "POST", // 提交方式为POST
+                url: "{:url('checkLogin')}", // 设置提交数据处理的脚本文件的地址
+                data: $("form").serialize(), // 将当前表单的数据序列化以后再提交
+                dataType: "json", // 设置提交数据的类型为json
+                success: function (result) { // 只有返回标志位为1的时候，才进行处理
+                    // alert(result.status);
+                    if (result.status == 1) { // 只有返回状态值为1，才允许跳转到后台
+                        alert(result.msg); // 弹出提示框，提醒用户
+                        window.location.href = "{:url('index/index')}";
+                    } else { // 弹出错误提示信息
+                        alert(result.msg);
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+<!-- 刷新验证码脚本 -->
+<script>
+    function refreshVerify() {
+        var ts = Date.parse(new Date()) / 1000;
+        $("#verifyImg").attr("src", "/captcha?id=" + ts); // 刷新验证码
+    }
+</script>
+
+</body>
+</html>
