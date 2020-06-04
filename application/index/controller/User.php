@@ -39,7 +39,7 @@ class User extends Base
     public function login()
     {
         // 判断用户是否已经登录过了
-        # $this->alreadyLogin();
+        $this->alreadyLogin();
         $this->view->assign('title', '用户登录');
         /*$this->view->assign('keywords', '简易教学管理系统');
         $this->view->assign('desc', '简易教学管理系统');*/
@@ -81,6 +81,7 @@ class User extends Base
 
         // 进行验证
         // $msg = $this->validate($data, $rule);
+        // $validateRes只会返回两种值：true->表示验证通过，如果返回字符串，则是用户自定义的错误提示信息
         $validateRes = $this->validate($data, $rule, $result);
 
         // 如果验证通过则执行 进行数据表查询
@@ -97,25 +98,31 @@ class User extends Base
             if (is_null($userInfo)) {
                 $msg = '没有找到该用户，请检查!';
             } else {
-                $status = 1;
-                $msg = '验证通过,点击[确定]进入!';
+                if (!$userInfo->getData('status')) {
+                    $msg = '该用户已经被停用，请联系系统管理员处理!';
+                } else {
+                    $status = 1;
+                    $msg = '验证通过,点击[确定]进入!';
 
-                // 创建2个session，用来检测用户登录状态和防止重复登录
-                Session::set('userId', $userInfo->id);
-                // 去除密码设置
-                $userInfoArr = $userInfo->getData();
-                unset($userInfoArr['password']);
+                    // 创建2个session，用来检测用户登录状态和防止重复登录
+                    Session::set('userId', $userInfo->id);
+                    // 去除密码设置
+                    $userInfoArr = $userInfo->getData();
+                    unset($userInfoArr['password']);
 
-                Session::set('userInfo', $userInfoArr);
+                    Session::set('userInfo', $userInfoArr);
 
-                if (isset($data['online']) && $data['online'] == 1) { // 记住密码
-                    Cookie::set('userId', $userInfo->id);
+                    if (isset($data['online']) && $data['online'] == 1) { // 记住密码
+                        Cookie::set('userId', $userInfo->id);
+                    }
+
+                    // 更新用户登录次数：自增1
+                    $userInfo->setInc('login_count');
+                    $userInfo->update(['last_login_time' => time()], ['id' => $userInfo->id]);
                 }
-
-                // 更新用户登录次数：自增1
-                $userInfo->setInc('login_count');
-                $userInfo->update(['last_login_time' => time()], ['id' => $userInfo->id]);
             }
+        } else {
+            $msg = $validateRes;
         }
 
         return json([
@@ -134,6 +141,7 @@ class User extends Base
             'logout_time' => time(),
             'id'          => Session::get('userId')
         ]);
+        // 注销session
         Session::delete('userId');
         Session::delete('userInfo');
         $this->redirect(url('user/login'));
@@ -220,7 +228,7 @@ class User extends Base
     {
         $data = $request->param();
         $status = 1;
-        $msg = '添加成功';
+        $msg = '添加管理员信息成功';
 
         $rules = [
             'name|用户名'   => 'require|min:3|max:10',
@@ -233,7 +241,7 @@ class User extends Base
             $res = UserModel::create($data);
             if ($res === null) {
                 $status = 0;
-                $msg = '添加失败!';
+                $msg = '添加管理员信息失败!';
             }
         }
         return json([
@@ -257,14 +265,14 @@ class User extends Base
      */
     public function unDelete()
     {
-        $idArr = Db::table('my_user')->whereNotNull('delete_time')->column('id');
+        /*$idArr = Db::table('my_user')->whereNotNull('delete_time')->column('id');
         Db::table('my_user')->whereIn('id', $idArr)->update([
             'delete_time' => null,
             'is_delete' => 0,
-        ]);
+        ]);*/
 
         // delete_time为null表示软删除未删除 使用模型查询时会自动加上此字段delete_time is null
-        // UserModel::update(['delete_time' => null], ['is_delete' => 1]);
+        UserModel::update(['delete_time' => null], ['is_delete' => 1]);
     }
 
     /**
@@ -299,15 +307,14 @@ class User extends Base
         }
 
         $where = ['id' => $data['id']];
-        /*dump($data);
-        dump($where);
-        die;*/
         unset($data['id']);
         $updateRes = UserModel::update($data, $where);
 
         // 如果是admin用户，更新当前session中用户信息userInfo的角色role，供页面调用
         if (Session::get('userInfo.name') == 'admin') {
-            Session::get('userInfo.role', $data['role']);
+            if (isset($data['role'])) {
+                Session::get('userInfo.role', $data['role']);
+            }
         }
 
         if ($updateRes == true) {

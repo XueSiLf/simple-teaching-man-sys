@@ -15,29 +15,37 @@
         管理员列表 <a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a> </nav>
     <div class="Hui-article">
         <article class="cl pd-20">
-            <div class="text-c"> 日期范围：
+            <!--<div class="text-c"> 日期范围：
                 <input type="text" onfocus="WdatePicker({maxDate:'#F{ $dp.$D(\'datemax\')||\'%y-%M-%d\'}'})" id="datemin" class="input-text Wdate" style="width:120px;">
                 -
                 <input type="text" onfocus="WdatePicker({minDate:'#F{ $dp.$D(\'datemin\')}',maxDate:'%y-%M-%d'})" id="datemax" class="input-text Wdate" style="width:120px;">
                 <input type="text" class="input-text" style="width:250px" placeholder="输入管理员名称" name="serachAdmin">
                 <button type="submit" class="btn btn-success"><i class="Hui-iconfont">&#xe665;</i> 搜用户</button>
-            </div>
+            </div>-->
+            <!-- 如果是admin显示用户数量，其他用户没必要显示 -->
+            {if condition="$Think.session.userInfo.name eq 'admin'"}
             <div class="cl pd-5 bg-1 bk-gray mt-20">
-                <span class="l"> <a href="javascript:;" onclick="unDelete()" class="btn btn-danger radius"><i class="Hui-iconfont">&#xe6e2;</i> 批量恢复</a> <a href="javascript:;" onclick="admin_add('添加管理员','{:url('user/adminAdd')}','800','500')" class="btn btn-primary radius"><i class="Hui-iconfont">&#xe600;</i> 添加管理员</a> </span>
+                <span class="l">
+                    <a href="javascript:;" onclick="unDelete()" class="btn btn-danger radius"><i class="Hui-iconfont">&#xe6e2;</i> 批量恢复</a>
+                    <a href="javascript:;" onclick="admin_add('添加管理员','{:url('user/adminAdd')}','800','500')" class="btn btn-primary radius"><i class="Hui-iconfont">&#xe600;</i> 添加管理员</a>
+                </span>
                 <span class="r">共有数据：<strong>{$count}</strong> 条</span>
             </div>
+            {/if}
+
             <table class="table table-border table-bordered table-bg">
                 <thead>
                 <tr>
-                    <th scope="col" colspan="9">员工列表</th>
+                    <th scope="col" colspan="9">管理员列表</th>
                 </tr>
                 <tr class="text-c">
-                    <th width="25"><input type="checkbox" name="" value=""></th>
+                    <!--<th width="25"><input type="checkbox" name="" value=""></th>-->
                     <th width="40">ID</th>
-                    <th width="150">登录名</th>
+                    <th width="150">用户名</th>
                     <!--<th width="90">手机</th>-->
                     <th width="150">邮箱</th>
-                    <th>角色</th>
+                    <th width="100">角色</th>
+                    <th width="50">登录次数</th>
                     <th width="130">上次登录时间</th>
                     <th width="100">是否已启用</th>
                     <th width="100">操作</th>
@@ -46,15 +54,40 @@
                 <tbody>
                 {volist name="list" id="vo"}
                 <tr class="text-c">
-                    <td><input type="checkbox" value="1" name=""></td>
+                    <!--<td><input type="checkbox" value="1" name=""></td>-->
                     <td>{$vo.id}</td>
                     <td>{$vo.name}</td>
                     <!--<td>13000000000</td>-->
                     <td>{$vo.email}</td>
                     <td>{$vo.role}</td>
+                    <td>{$vo.login_count}</td>
                     <td>{$vo.last_login_time}</td>
-                    <td class="td-status"><span class="label label-success radius">{$vo.status}</span></td>
-                    <td class="td-manage"><a style="text-decoration:none" onClick="admin_stop(this,'{$vo.id}')" href="javascript:;" title="停用"><i class="Hui-iconfont">&#xe631;</i></a> <a title="编辑" href="javascript:;" onclick="admin_edit('管理员编辑','{:url('user/adminEdit', ['id' => $vo.id])}','1','800','500')" class="ml-5" style="text-decoration:none"><i class="Hui-iconfont">&#xe6df;</i></a> <a title="删除" href="javascript:;" onclick="admin_del(this, '{$vo.id}')" class="ml-5" style="text-decoration:none"><i class="Hui-iconfont">&#xe6e2;</i></a></td>
+                    <td class="td-status">{// 根据当前用户状态，设置启用样式}
+                        {if condition="$vo.status eq '已启用'"}
+                        <span class="label label-success radius">{$vo.status}</span>
+                        {else /}
+                        <span class="label label-default radius">{$vo.status}</span>
+                        {/if}
+                    </td>
+                    <td class="td-manage">
+                        <!--切换启用与禁用图标-->
+                        <!--只允许admin有权启用或停用-->
+                        {if condition="$Think.session.userInfo.name eq 'admin' AND $Think.session.userInfo.name neq $vo.name"}
+                        {if condition="$vo.status eq '已启用'"}
+                        <a style="text-decoration:none" onClick="admin_stop(this,'{$vo.id}')" href="javascript:;" title="停用"><i class="Hui-iconfont">&#xe631;</i></a>
+                        {else /}
+                        <a style="text-decoration:none" onClick="admin_start(this,'{$vo.id}')" href="javascript:;" title="启用"><i class="Hui-iconfont">&#xe615;</i></a>
+                        {/if}
+                        {/if}
+
+                        <a title="编辑" href="javascript:;" onclick="admin_edit('管理员编辑','{:url('user/adminEdit', ['id' => $vo.id])}','1','800','500')" class="ml-5" style="text-decoration:none"><i class="Hui-iconfont">&#xe6df;</i></a>
+
+                        <!--只允许admin有删除权限-->
+                        {if condition="$Think.session.userInfo.name eq 'admin' AND $Think.session.userInfo.name neq $vo.name"}
+                        <a title="删除" href="javascript:;" onclick="admin_del(this, '{$vo.id}')" class="ml-5" style="text-decoration:none"><i class="Hui-iconfont">&#xe6e2;</i></a>
+                        {/if}
+
+                    </td>
                 </tr>
                 {/volist}
                 <!--<tr class="text-c">
@@ -111,7 +144,7 @@
         layer.confirm("确认要恢复吗？", function () {
             $.get("{:url('user/unDelete')}");
             layer.msg('已恢复', {icon:1, time: 1000}); // 消息弹层1秒后消失
-            // window.location.reload(); // 重新加载页面，显示所有数据
+            window.location.reload(); // 重新加载页面，显示所有数据
         });
     }
 
@@ -130,7 +163,7 @@
             $.get("{:url('user/setStatus')}", {id: id});
 
             $(obj).parents("tr").find(".td-manage").prepend('<a onClick="admin_start(this,id)" href="javascript:;" title="启用" style="text-decoration:none"><i class="Hui-iconfont">&#xe615;</i></a>');
-            $(obj).parents("tr").find(".td-status").html('<span class="label label-default radius">已禁用</span>');
+            $(obj).parents("tr").find(".td-status").html('<span class="label label-default radius">已停用</span>');
             $(obj).remove();
             layer.msg('已停用!',{icon:5, time:1000});
         });

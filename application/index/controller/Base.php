@@ -19,10 +19,11 @@ class Base extends Controller
 
 	public function _initialize()
 	{
-		parent::_initialize();
+		parent::_initialize(); // 继承父类中的初始化操作
 		if (Session::has('userId')) {
 			$this->isLogin = true;
-		} 
+		}
+//		var_dump(Session::get('userId'));
 
 	    /*$action = $this->request->action();
 	    $filterArr = [
@@ -41,8 +42,8 @@ class Base extends Controller
 	public function isLogin()
 	{
 		if (!$this->isLogin) {
-			# return $this->redirect(url('user/login'));
-			return $this->error('用户未登录，无权访问!', url('user/login'));
+			return $this->redirect(url('user/login'));
+			# return $this->error('用户未登录，无权访问!', url('user/login'));
 		}
 	}
 
@@ -52,9 +53,9 @@ class Base extends Controller
 	 */
 	public function alreadyLogin()
 	{
-		if (!$this->isLogin) {
-			# return $this->redirect(url('index/index'));
-			return $this->error('用户已经登录，请勿重复登录!', url('index/index'));
+		if ($this->isLogin) {
+			return $this->redirect(url('index/index'));
+			# return $this->error('用户已经登录，请勿重复登录!', url('index/index'));
 		}
 	}
 }

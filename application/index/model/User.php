@@ -21,7 +21,7 @@ class User extends Model
     use SoftDelete;
 
     // 设置软删除字段
-    // 只设置该字段为null,该字段才会显示出来
+    // 只有该字段为null,该字段才会显示出来
     protected $deleteTime = 'delete_time';
 
     // 保存自动完成列表
