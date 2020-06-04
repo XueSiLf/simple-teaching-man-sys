@@ -6,7 +6,13 @@
 </head>
 <body>
 
-{include file='common/header,common/menu' /}
+{block name="header"}
+{include file='common/header' /}
+{/block}
+
+{block name="menu"}
+{include file='common/menu' /}
+{/block}
 
 {block name='content'}
 页面主体内容

@@ -17,9 +17,9 @@
     <!--[if IE 6]>
     <script type="text/javascript" src="__STATIC__/h-ui.admin/js/DD_belatedPNG_0.0.8a-min.js" ></script>
     <script>DD_belatedPNG.fix('*');</script><![endif]-->
-    <title>后台登录 - 简易教学管理系统</title>
-    <meta name="keywords" content="简易教学管理系统">
-    <meta name="description" content="简易教学管理系统">
+    <title>{$title|default='后台登录'} - 简易教学管理系统</title>
+    <meta name="keywords" content="{$keywords|default='简易教学管理系统'}">
+    <meta name="description" content="{$desc|default='简易教学管理系统'}">
 </head>
 <body>
 <input type="hidden" id="TenantId" name="TenantId" value="" />
@@ -30,18 +30,18 @@
             <div class="row cl">
                 <label class="form-label col-xs-3"><i class="Hui-iconfont">&#xe60d;</i></label>
                 <div class="formControls col-xs-8">
-                    <input name="name" type="text" placeholder="用户名" class="input-text size-L">
+                    <input name="name" type="text" autocomplete="off" placeholder="用户名" class="input-text size-L">
                 </div>
             </div>
             <div class="row cl">
                 <label class="form-label col-xs-3"><i class="Hui-iconfont">&#xe60e;</i></label>
                 <div class="formControls col-xs-8">
-                    <input name="password" type="password" placeholder="密码" class="input-text size-L">
+                    <input name="password" type="password" autocomplete="off" placeholder="密码" class="input-text size-L">
                 </div>
             </div>
             <div class="row cl">
                 <div class="formControls col-xs-8 col-xs-offset-3">
-                    <input name="verify" class="input-text size-L" type="text" placeholder="验证码" onblur="if(this.value==''){this.value='验证码:'}" onclick="if(this.value=='验证码:'){this.value='';}" style="width:150px;">
+                    <input name="verify" class="input-text size-L" type="text" placeholder="验证码" autocomplete="off" onblur="if(this.value==''){this.value='验证码:'}" onclick="if(this.value=='验证码:'){this.value='';}" style="width:150px;">
                     <img id="verifyImg" src="{:captcha_src()}">
                     <a id="kanbuq" href="javascript:refreshVerify();">看不清，换一张</a>
                 </div>
@@ -49,8 +49,8 @@
             <div class="row cl">
                 <div class="formControls col-xs-8 col-xs-offset-3">
                     <label for="online">
-                        <input type="checkbox" name="online" id="online" value="">
-                        使我保持登录状态</label>
+                        <input type="checkbox" name="online" id="online" value="1">
+                        记住密码</label>
                 </div>
             </div>
             <div class="row cl">
@@ -62,7 +62,7 @@
         </form>
     </div>
 </div>
-<div class="footer">Copyright 简易教学管理系统 v1.0</div>
+<div class="footer">Copyright {$copyRight|default='简易教学管理系统'} v1.0</div>
 
 <script type="text/javascript" src="__LIB__/jquery/1.9.1/jquery.min.js"></script>
 <script type="text/javascript" src="__STATIC__/h-ui/js/H-ui.js"></script>
@@ -82,8 +82,11 @@
                     if (result.status == 1) { // 只有返回状态值为1，才允许跳转到后台
                         alert(result.msg); // 弹出提示框，提醒用户
                         window.location.href = "{:url('index/index')}";
-                    } else { // 弹出错误提示信息
+                    } else { // 弹出错误提示信息，刷新页面
                         alert(result.msg);
+                        // setTimeout(function () {
+                        //     window.location.href = "{:url('login')}";
+                        // }, 1000);
                     }
                 }
             });
